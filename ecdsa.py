@@ -27,8 +27,6 @@ def num2bin(x):
   return res
 
 def gcd(a,b):
-  if b > a:
-    a,b = b,a
   while b > 0:
     a,b = b,a % b
   return a
@@ -63,7 +61,7 @@ def nextPrime_odd(p):
 prime = 2**160 * 115 + 86427
 
 #  n_ = 115792089210356248762697446949407573529996955224135760342422259061068512044369
-n_ = prime + 1
+n4 = (prime + 1) / 4
 a = prime - 31
 c = 17
 
@@ -137,12 +135,11 @@ def num2code(x):
 
 
 def h(x):
-  dx1 = hashlib.md5(x).digest()
-  dx2 = ''
+  dx1 = hashlib.sha256(x).digest()
   res = 0
-  for cx in (dx1+dx2):
+  for cx in (dx1):
     res = (res<<8) ^ ord(cx)
-  return res
+  return res % n4
 
 def random256(m):
   md = hashlib.sha256("***RANDOM-SEED_X***")
@@ -222,22 +219,19 @@ def signSchnorr(G,m,x):
   k = randomX(m)
   R = mulP(G,k)
   e = h(str(R[0]) + m)
-  return [(k - x*e) % n_, e]
+  return [(k - x*e) % n4, e]
 
 def ecdsa(G,m,x):
-  s = 0 
-  n4 = n_/4
-  hh = h(m)
-  k = 2*randomX(m) + 1
+  k = randomX(m)
   R = mulP(G,k)
+  hh = h(m+str(R[0]))
   s = ( inv(k,n4) * (hh + R[0]*x) ) % n4
   return [s, R[0]]
 
 def ecdsa_v(G,m,S,Y):
-  n4 = n_/4
   si = inv(S[0], n4)
-  hh = h(m)
-  u1 = (si * h(m)) % n4
+  hh = h(m + str(S[1]))
+  u1 = (si * hh) % n4
   u2 = (si * S[1]) % n4
   return addP( mulP(G, u1), mulP(Y, u2) )[0] == S[1]
 
@@ -275,7 +269,7 @@ writeNumber(sig[0],'s0')
 writeNumber(sig[1],'s1')
 
 
-#print "test ecda ", ecdsa_v(P,message,sig,y)
+print "test Schnoor ", h(str(addP(mulP(P,sig[0]),mulP(y,sig[1]))[0]) + message) == sig[1]
 
 
 #print "Schnorr's signature: ", sig
@@ -346,4 +340,4 @@ writeNumber(sig[1],'s1')
 
 #print "Does it work, is mm = m? ", mm == m
 
-print prime - (2**160) * 115
+#print prime - (2**160) * 115
