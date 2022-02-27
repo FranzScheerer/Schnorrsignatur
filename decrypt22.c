@@ -1,7 +1,6 @@
 /* The current date and time are Sat Feb 12 15:07:12 2022
  */
 
-#include <time.h>
 #include <stdio.h>
 #include <string.h>
 
